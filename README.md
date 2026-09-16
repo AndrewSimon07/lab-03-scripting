@@ -1,6 +1,6 @@
 # Lab 03: Scripting
 
-The goal of this activity is to get you comfortable with writing scripts in Python and bash. You will practice working with environment variables, making API requests, and handling user input. Follow the steps below to create scripts that demonstrate these fundamental scripting concepts.
+The goal of this activity is to get you comfortable with writing scripts in Python and bash. You will practice working with environment variables, making API requests, and using command-line arguments. Follow the steps below to create scripts that demonstrate these fundamental scripting concepts.
 
 > **Note:** Review and adhere to [coding best practices](https://github.com/ksiller/DS2022/blob/main/best-practices.md) where applicable when developing your scripts.
 
@@ -39,7 +39,7 @@ sh uv-installer.sh
 
 1. Log in to GitHub and fork this repository: [https://github.com/ksiller/lab-03-scripting](https://github.com/ksiller/lab-03-scripting).
 
-2. Clone your fork locally, then change into the `lab-03-scripting` folder.
+2. Clone your fork locally, then change into the `lab-03-scripting` directory.
 
 3. Confirm that you are in the repository's top-level directory (`lab-03-scripting`), then initialize a `uv` project:
 
@@ -49,9 +49,9 @@ uv init --name ghevents --description "Parse GH events"
 
 This command creates the project files `uv` needs, typically `pyproject.toml`, a hidden `.python-version` file, and a `src/ghevents/` package directory.
 
-- `pyproject.toml`: Open this file in your Cursor editor (or run `cat pyproject.toml` in your terminal). Notice the `name` and `description` fields; their values match the command-line options you passed to `uv init`. Also notice that the `dependencies` field is defined as an empty list `[]`.
+- `pyproject.toml`: Open this file in your editor (or run `cat pyproject.toml` in your terminal). Notice the `name` and `description` fields; their values match the command-line options you passed to `uv init`. Also notice that the `dependencies` field is defined as an empty list `[]`.
 - `.python-version`: This is likely the Python version `uv` found when it ran `uv init`. You can change the version if you prefer a different one.
-- `src/ghevents/`: This is where your Python script(s) belong. Initially it contains `__init__.py`, which makes your project importable by other Python scripts or projects.
+- `src/ghevents/`: This is where your Python script belongs. Initially it contains `__init__.py`, which makes your project importable by other Python scripts or projects.
 
 Add the `requests` package:
 
@@ -113,7 +113,7 @@ You can test the globals interactively with `uv run python` in a shell where `GI
 - include a docstring describing what it does
 - use `requests.get(url).text` to download data from `url`; the result is a JSON text string
 - pass that JSON text string to `json.loads(...)` so it becomes a normal Python list/dict
-- return that Python object (when the call succeeds; it's a list of dictionaries containing information for the retrieved events)
+- return that Python object (when the call succeeds, it should be a list of dictionaries containing event information)
 
 **6.** Write a function named `print_events` that takes `events` and an optional parameter `n` with default value `5`. The function must:
 
@@ -136,7 +136,7 @@ for x in events[:n]:
 - calls `retrieve_events(url)` and stores the returned list
 - calls `print_events(...)` with that list (you may pass `n`, or omit it to use the default of `5`)
 
-Then add this entry-point guard at the bottom of the script so `main()` runs only when the file is executed directly (not when imported):
+Then add this entry-point guard at the bottom of the script so `main()` runs only when the file is executed directly (not when imported). Review [class/03-scripting](https://github.com/ksiller/DS2022/blob/main/class/03-scripting/README.md) for how `if __name__ == "__main__"` works:
 
 ```python
 if __name__ == "__main__":
@@ -165,22 +165,39 @@ Much more information is available in the [GitHub API documentation](https://doc
 
 **9. Additional Challenges (Optional):**
 
-- Explore the keys contained in the returned JSON data and update the `print_events` function to output additional information for each event.
-- Test portability of your package on another system:
-  - a. Log in to the UVA HPC system: [https://ood.virginia.edu](https://ood.virginia.edu)
-  - b. In the Open OnDemand dashboard menu, go to **Clusters**, then **HPC shell access** to open a terminal.
-  - c. In the terminal, clone your fork of `lab-03-scripting`.
-  - d. Change into `lab-03-scripting` with the `cd` command.
-  - e. Execute these commands:
+**Challenge A (local):** Explore the keys contained in the returned JSON data and update the `print_events` function to output additional information for each event. You can do this on your computer without pushing to GitHub.
+
+**Challenge B (portability on HPC):** Test that your Python project runs on another system. This only works after your Script 1 files are on GitHub—complete step (a) before logging into Open OnDemand.
+
+- a. On your computer, from the repository's top-level directory, add, commit, and push your Script 1 work to your fork (do **not** commit `.venv/`):
+
+```bash
+git add src/ghevents/ pyproject.toml uv.lock .gitignore .python-version
+git commit -m "Add ghevents Script 1 package"
+git push origin main
+```
+
+- b. Log in to the UVA HPC system: [https://ood.virginia.edu](https://ood.virginia.edu)
+- c. In the Open OnDemand dashboard menu, go to **Clusters**, then **HPC shell access** to open a terminal.
+- d. In that HPC shell, set `GITHUB_USER` to your GitHub username (your computer's shell config is not used on Rivanna):
+
+```bash
+export GITHUB_USER="ksiller"  # replace with your own GitHub username
+```
+
+- e. Clone your fork of `lab-03-scripting`, then change into that directory with `cd`.
+- f. Execute these commands:
 
 ```bash
 module load uv
 uv run python src/ghevents/github-events.py
 ```
 
-`uv` will inspect your `pyproject.toml` and `uv.lock` files, create a new virtual environment that matches your project's specs, and then execute your Python script.
+`uv` will inspect your `pyproject.toml` and `uv.lock` files, create a new virtual environment that matches your project's specs (`.venv/` is recreated on HPC; it was not pushed), and then execute your Python script.
 
-**Success:** When the script prints recent events without errors, continue to Script 2 to practice bash text processing, or try the optional challenges above.
+You may finish Challenge B anytime after the checkpoint push in (a), including after Scripts 2–3 or just before Canvas submit.
+
+**Success:** When the script prints recent events without errors on your computer, continue to Script 2. Optional Challenge A can be done now; optional Challenge B can wait until after you push.
 
 ## Script 2: Write a Bash script to analyze Moby Dick
 
@@ -275,7 +292,15 @@ Adjust the input and output filenames to match what you find inside the archive.
 
 ## Submit your work
 
-You created three scripts for this lab (`github-events.py` under `src/ghevents/`, and `analyze-moby-dick.sh` and `convert-bundle.sh` at the repository's top-level directory), plus the `uv` project files needed to run the Python script. Add, commit, and push them to your fork. Then submit the URL of your forked repository in the text box within Canvas.
+You created three scripts for this lab (`github-events.py` under `src/ghevents/`, and `analyze-moby-dick.sh` and `convert-bundle.sh` at the repository's top-level directory), plus the `uv` project files needed to run the Python script. Add, commit, and push them to your fork:
+
+```bash
+git add src/ghevents/ analyze-moby-dick.sh convert-bundle.sh pyproject.toml uv.lock .gitignore .python-version
+git commit -m "Complete lab 03 scripting"
+git push origin main
+```
+
+If you already pushed Script 1 during Challenge B, add and push any remaining files the same way. Then submit the URL of your forked repository in the text box within Canvas.
 
 ## Expected repository layout
 
@@ -302,6 +327,6 @@ lab-03-scripting/
 
 Notes:
 
-- Add, commit, and push your work to your fork on GitHub.
+- Add, commit, and push your work to your fork on GitHub with `git push origin main`.
 - Because you set up `.gitignore`, the `.venv` directory will not be tracked or pushed. That is intentional and is general best practice. Others (and graders) can recreate the environment and `.venv` from the `uv.lock` file using `uv sync`.
 - `uv init --name ghevents --description "Parse GH events"` creates the package directory `src/ghevents/`. Keep the starter `__init__.py` that `uv` generates, and add `github-events.py` alongside it.
