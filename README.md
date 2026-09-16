@@ -6,7 +6,7 @@ The goal of this activity is to get you comfortable with writing scripts in Pyth
 
 ## Setup
 
-For the Python scripts in this lab, you will need Python 3 and the [uv](https://docs.astral.sh/uv/) package manager installed on your computer.
+For the Python script in this lab, you will need Python 3 and the [uv](https://docs.astral.sh/uv/) package manager installed on your computer.
 
 **Confirm that both are installed:**  
 Open a terminal window and run these commands (if you are on a Windows system, make sure you are in a WSL bash terminal, not PowerShell).
@@ -47,7 +47,7 @@ sh uv-installer.sh
 uv init --name ghevents --description "Parse GH events"
 ```
 
-This command creates (or updates) the project files `uv` needs, typically `pyproject.toml`, a hidden `.python-version` file, and a `src/ghevents/` package directory.
+This command creates the project files `uv` needs, typically `pyproject.toml`, a hidden `.python-version` file, and a `src/ghevents/` package directory.
 
 - `pyproject.toml`: Open this file in your Cursor editor (or run `cat pyproject.toml` in your terminal). Notice the `name` and `description` fields; their values match the command-line options you passed to `uv init`. Also notice that the `dependencies` field is defined as an empty list `[]`.
 - `.python-version`: This is likely the Python version `uv` found when it ran `uv init`. You can change the version if you prefer a different one.
@@ -77,13 +77,7 @@ Or create `.gitignore` in your editor and add the single line `.venv/` to that f
 
 **1.** Create a new script called `github-events.py` in `src/ghevents/` (the package directory created by `uv init`), and open it in an editor.
 
-**2.** Put your Python 3 path in a shebang line. Use the command below to find your path to Python:
-
-```bash
-which python3
-```
-
-For the shebang, use the more flexible `/usr/bin/env python3` form (see lecture slides). Because dependencies live in the `uv` environment, run the finished script with `uv run` (shown in step 7) so `requests` is available.
+**2.** Put your Python 3 path in a shebang line. Use the more flexible `/usr/bin/env python3` form (see lecture slides). Because dependencies live in the `uv` environment, run the finished script with `uv run` (shown in step 8) so the `requests` package can be found by the Python interpreter.
 
 **3.** For this script you will need to set an environment variable in your shell. Edit your `~/.bashrc` file (or `~/.zshrc`) and export a new variable named `GITHUB_USER`. Give it the value of your own GitHub username.
 
@@ -93,48 +87,63 @@ export GITHUB_USER="ksiller"  # replace with your own GitHub username
 
 After you add this line, run `source ~/.bashrc` (or `source ~/.zshrc`) to load the new value into your environment.
 
-**4.** Back to your Python script. To work with environment variables and remote APIs you need three imports:
+**4.** Back to your Python script. Structure `github-events.py` as follows.
 
-```python
-import os
-import json
-import requests
-```
-
-To retrieve the value of an environment variable in Python, use this syntax:
-
-```python
-GHUSER = os.getenv('GITHUB_USER')
-```
-
-You can test that this works by using Python interactively (`uv run python`). Load your imports and execute that line, then `print(GHUSER)` to confirm your username.
-
-**5.** Next, use this variable to fetch the recent activity for this user account (you!) on GitHub. First configure the remote endpoint. The format for that API address is:
+The GitHub events API address has this form:
 
 ```text
 https://api.github.com/users/USERNAME/events
 ```
 
-To dynamically insert your `GITHUB_USER` name into this URL, define a `url` variable like this:
+First add the imports, then define `GHUSER` and `url` as module-level (global) variables below the imports:
 
 ```python
+import os
+import json
+import requests
+
+GHUSER = os.getenv('GITHUB_USER')
 url = f'https://api.github.com/users/{GHUSER}/events'
 ```
 
-You will know if this is formatted correctly if you `print(url)` within Python and see a well-formed address.
+You can test the globals interactively with `uv run python` in a shell where `GITHUB_USER` is already set: after the imports and assignments, `print(GHUSER)` and `print(url)` should show your username and a well-formed URL.
 
-**6.** Use this address to fetch your recent GitHub activity with the `requests` library. Load the response from the API into a variable, and loop through the first five events:
+**5.** Write a function named `retrieve_events` that takes a single parameter `url`. The function must:
+
+- include a docstring describing what it does
+- use `requests.get(url).text` to download data from `url`; the result is a JSON text string
+- pass that JSON text string to `json.loads(...)` so it becomes a normal Python list/dict
+- return that Python object (when the call succeeds; it's a list of dictionaries containing information for the retrieved events)
+
+**6.** Write a function named `print_events` that takes `events` and an optional parameter `n` with default value `5`. The function must:
+
+- include a docstring describing what it does
+- loop over only the first `n` items in `events`
+- for each item, print one line in the form `type :: repo`, using the event's `type` field and its nested `repo` → `name` field
+
+Example of the loop body shape (you still need to write the full function, including the docstring and signature):
 
 ```python
-r = json.loads(requests.get(url).text)
-
-for x in r[:5]:
-  event = x['type'] + ' :: ' + x['repo']['name']
-  print(event)
+for x in events[:n]:
+    event = x['type'] + ' :: ' + x['repo']['name']
+    print(event)
 ```
 
+**7.** Write a `main` function (with a docstring) that:
 
-**7.** Use `chmod` to make your script executable if you like, then run it with `uv` so it uses the project environment:
+- prints the value of `GHUSER`
+- prints the value of `url`
+- calls `retrieve_events(url)` and stores the returned list
+- calls `print_events(...)` with that list (you may pass `n`, or omit it to use the default of `5`)
+
+Then add this entry-point guard at the bottom of the script so `main()` runs only when the file is executed directly (not when imported):
+
+```python
+if __name__ == "__main__":
+    main()
+```
+
+**8.** Use `chmod` to make your script executable if you like, then run it with `uv` so it uses the project environment:
 
 ```bash
 chmod +x src/ghevents/github-events.py
@@ -150,14 +159,13 @@ python src/ghevents/github-events.py
 
 The `source` command updates your shell environment so that `python` resolves to the interpreter in `.venv/bin/` and can import packages installed there (such as `requests`).
 
-Make sure no errors occur. Take a moment to `print(r)` and view all the results. You can also do this by opening the fully formatted URL in a web browser. Note the variety of data available around your work on GitHub.
+Make sure no errors occur. Take a moment to inspect the full API response (for example, temporarily `print(events)` inside `main`) or open the fully formatted URL in a web browser. Note the variety of data available around your work on GitHub.
 
 Much more information is available in the [GitHub API documentation](https://docs.github.com/en/rest?apiVersion=2022-11-28).
 
+**9. Additional Challenges (Optional):**
 
-**8. Additional Challenges (Optional):**
-
-- Explore the keys contained in the returned JSON data and output additional information for each event.
+- Explore the keys contained in the returned JSON data and update the `print_events` function to output additional information for each event.
 - Test portability of your package on another system:
   - a. Log in to the UVA HPC system: [https://ood.virginia.edu](https://ood.virginia.edu)
   - b. In the Open OnDemand dashboard menu, go to **Clusters**, then **HPC shell access** to open a terminal.
@@ -204,7 +212,9 @@ set -euo pipefail
 
 - c. Use the `grep` command to search the `mobydick.txt` file for occurrences of the word specified by the first command-line argument, now stored in the `SEARCH_PATTERN` variable. **Hint:** Look up the `grep -o` option.
 
-- d. Use `wc` to count the number of occurrences of the `SEARCH_PATTERN` returned by `grep`. **Hint:** Pipes can be of great help here. Store that number in a new variable `OCCURRENCES`.
+- d. Use `wc` to count the number of matches produced by `grep`. **Hint:** Pipes can help here. Store that count in a variable named `OCCURRENCES`.
+
+  **Note:** With `set -euo pipefail`, a `grep` that finds no matches exits with status 1 and will stop the script. For this lab, test with a word you know appears in the novel (for example, `whale`).
 
 - e. Write to the file specified by `OUTPUT` the following message: `The search pattern SEARCH was found N time(s).` Replace `SEARCH` and `N` with the proper variable expressions.
 
@@ -241,14 +251,14 @@ set -euo pipefail
 
 **3.** Decompress / open the compressed archive using `tar`.
 
-**4.** Remove any empty rows from the dataset. Use **one** of these two approaches:
+**4.** Remove any empty rows from the dataset. Use **one** of these two approaches (redirect or write the cleaned output to a new file; do not leave it only on the screen):
 
 ```bash
 # awk can remove blank / whitespace-only lines
-awk '!/^[[:space:]]*$/' myfile.tsv
+awk '!/^[[:space:]]*$/' myfile.tsv > cleaned.tsv
 
 # tr can squeeze repeated newlines
-cat myfile.tsv | tr -s '\n' > my_new_file.tsv
+cat myfile.tsv | tr -s '\n' > cleaned.tsv
 ```
 
 Adjust the input and output filenames to match what you find inside the archive.
