@@ -1,6 +1,6 @@
 # Lab 03: Scripting
 
-The goal of this activity is to get you comfortable with writing scripts in bash and Python. You will practice working with environment variables, making API requests, and handling user input. Follow the steps below to create scripts that demonstrate these fundamental scripting concepts.
+The goal of this activity is to get you comfortable with writing scripts in Python and bash. You will practice working with environment variables, making API requests, and handling user input. Follow the steps below to create scripts that demonstrate these fundamental scripting concepts.
 
 ## Setup
 
@@ -26,103 +26,7 @@ If this command fails with an error, install uv using this command:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-## Script 1: Write a Bash script to analyze Moby Dick
-
-**The Case:** A publishing team is preparing an annotated edition of Herman Melville's *Moby Dick* and wants to analyze word frequency across the novel. Searching a 200,000+ word text by hand for many target words is slow and error-prone.
-
-**Your Task:** Write a bash script that searches the novel for a given word, counts how often it appears, and writes a short report to an output file.
-
-**Let's Build It:**
-
-1. Log in to GitHub and fork this repository: <https://github.com/ksiller/lab-03-scripting>.
-
-2. Clone your fork locally, then change into the `lab-03-scripting` folder.
-
-3. In `lab-03-scripting`, create a new file `analyze-moby-dick.sh`. Begin the script with a shebang and strict error handling:
-
-   ```bash
-   #!/bin/bash
-   set -euo pipefail
-   ```
-
-   (`set -euo pipefail` makes the script exit on errors, unset variables, and failed commands in a pipeline.)
-
-4. The `analyze-moby-dick.sh` bash script should automate the following tasks and meet the following specifications:
-
-   a. The script accepts two command-line arguments. The first argument is a string that defines the word to search for; the second argument specifies an output file. Internally, the script stores the value of the first command-line argument in a variable named `SEARCH_PATTERN` and the second in a variable named `OUTPUT`.
-
-   b. Use the `curl` command to download the text of the Moby Dick novel and save it as `mobydick.txt` in the current directory.
-
-   **The URL is:**  
-   <https://gist.githubusercontent.com/StevenClontz/4445774/raw/1722a289b665d940495645a5eaaad4da8e3ad4c7/mobydick.txt>
-
-   **Hint:** Review [class/01-cli](https://github.com/ksiller/DS2022/blob/main/class/01-cli/README.md) for using `curl` to download data and save it to a file.
-
-   c. Use the `grep` command to search the `mobydick.txt` file for occurrences of the word specified by the first command-line argument, now stored in the `SEARCH_PATTERN` variable. **Hint:** Look up the `grep -o` option.
-
-   d. Use `wc` to count the number of occurrences of the `SEARCH_PATTERN` returned by `grep`. **Hint:** Pipes can be of great help here. Store that number in a new variable `OCCURRENCES`.
-
-   e. Write to the file specified by `OUTPUT` the following message: `The search pattern <S> was found <N> time(s).` Replace `<S>` and `<N>` with the proper variable expressions.
-
-   **Success:** If the script runs without errors and writes the expected report, continue to Script 2 or try the optional challenge below.
-
-   **Additional Challenge (Optional):**  
-   Extend the script to handle a few common edge cases and provide richer output:
-
-   a. If the second command-line argument is missing (i.e., no output file specified), the script should write the output to a default file `results.txt`.
-
-   b. If the specified output file already exists, the script should inform the user that the file already exists and abort processing.
-
-   c. In addition to outputting the total number of occurrences, the script will also list the lines in the text where the searched word was found. **Hint:** Check out the `cut` command.
-
-   d. The search should be case-insensitive. **Hint:** Check the documentation for the `grep` command.
-
-This script combines `curl`, `grep`, and `wc` in a short bash pipeline to perform common raw text processing tasks. Next, clean and convert a remote data archive with bash.
-
-## Script 2: Use Bash to clean a data file
-
-**The Case:** You need to turn a remote compressed data bundle into a clean CSV: download an archive, remove blank rows from a tab-separated file, convert it to CSV, count the remaining data rows, and re-package the result.
-
-**Your Task:** Write a bash script named `convert-bundle.sh` that retrieves a remote tar archive, decompresses it, removes blank lines from the dataset, converts the tab-separated file to CSV, reports how many data rows remain, and packages the cleaned CSV into a new compressed archive.
-
-**Let's Build It:**
-
-1. In the repo root (`lab-03-scripting`), create a new file `convert-bundle.sh`. Begin the script with a shebang and strict error handling:
-
-   ```bash
-   #!/bin/bash
-   set -euo pipefail
-   ```
-
-2. Using `curl` or `wget`, fetch this tarball:
-
-   <https://s3.amazonaws.com/ds2002-resources/labs/lab3-bundle.tar.gz>
-
-3. Decompress / open the compressed archive using `tar`.
-
-4. Remove any empty rows from the dataset. Use **one** of these two approaches:
-
-   ```bash
-   # awk can remove blank / whitespace-only lines
-   awk '!/^[[:space:]]*$/' myfile.tsv
-
-   # tr can squeeze repeated newlines
-   cat myfile.tsv | tr -s '\n' > my_new_file.tsv
-   ```
-
-   Adjust the input and output filenames to match what you find inside the archive.
-
-5. Convert the tab-separated file into a comma-separated (CSV) file. You can do this with tools such as `sed`, `tr`, or `awk` (for example, replace tab characters with commas).
-
-6. Add a line of code to count how many lines of data remain in the cleaned file. Remember that row 1 contains headers, so it should not be counted. Another line should `echo` that value to the screen.
-
-7. Finally, create a new tarball named `converted-archive.tar.gz` that contains the cleaned CSV file.
-
-8. Use `chmod` to make your script executable, and run it. Make sure no errors occur.
-
-**Success:** When the script finishes without errors and produces `converted-archive.tar.gz`, continue to Script 3 to fetch data from an API with Python and `uv`.
-
-## Script 3: Use Python to fetch remote data
+## Script 1: Use Python to fetch remote data
 
 **The Case:** A team wants a simple view of recent GitHub activity for a developer account. Checking profiles by hand does not scale, so they want a small script that calls the GitHub API and prints recent events.
 
@@ -130,7 +34,11 @@ This script combines `curl`, `grep`, and `wc` in a short bash pipeline to perfor
 
 **Setup (uv project + `requests`):**
 
-Confirm that you are in the repo root (`lab-03-scripting`), then initialize a `uv` project:
+1. Log in to GitHub and fork this repository: <https://github.com/ksiller/lab-03-scripting>.
+
+2. Clone your fork locally, then change into the `lab-03-scripting` folder.
+
+3. Confirm that you are in the repo root (`lab-03-scripting`), then initialize a `uv` project:
 
 ```bash
 uv init --name ghevents --description "Parse GH events"
@@ -271,11 +179,103 @@ The `source` command updates your shell environment so that `python` resolves to
 
         `uv` will inspect your `pyproject.toml` and `uv.lock` files, create a new virtual environment that matches your project's specs, and then execute your Python script.
 
-**Success:** When the script prints recent events without errors, you have finished the coding portion of the lab. Submit your work as described below.
+**Success:** When the script prints recent events without errors, continue to Script 2 to practice bash text processing, or try the optional challenges above.
+
+## Script 2: Write a Bash script to analyze Moby Dick
+
+**The Case:** A publishing team is preparing an annotated edition of Herman Melville's *Moby Dick* and wants to analyze word frequency across the novel. Searching a 200,000+ word text by hand for many target words is slow and error-prone.
+
+**Your Task:** Write a bash script that searches the novel for a given word, counts how often it appears, and writes a short report to an output file.
+
+**Let's Build It:**
+
+1. In the repo root (`lab-03-scripting`), create a new file `analyze-moby-dick.sh`. Begin the script with a shebang and strict error handling:
+
+   ```bash
+   #!/bin/bash
+   set -euo pipefail
+   ```
+
+   (`set -euo pipefail` makes the script exit on errors, unset variables, and failed commands in a pipeline.)
+
+2. The `analyze-moby-dick.sh` bash script should automate the following tasks and meet the following specifications:
+
+   a. The script accepts two command-line arguments. The first argument is a string that defines the word to search for; the second argument specifies an output file. Internally, the script stores the value of the first command-line argument in a variable named `SEARCH_PATTERN` and the second in a variable named `OUTPUT`.
+
+   b. Use the `curl` command to download the text of the Moby Dick novel and save it as `mobydick.txt` in the current directory.
+
+   **The URL is:**  
+   <https://gist.githubusercontent.com/StevenClontz/4445774/raw/1722a289b665d940495645a5eaaad4da8e3ad4c7/mobydick.txt>
+
+   **Hint:** Review [class/01-cli](https://github.com/ksiller/DS2022/blob/main/class/01-cli/README.md) for using `curl` to download data and save it to a file.
+
+   c. Use the `grep` command to search the `mobydick.txt` file for occurrences of the word specified by the first command-line argument, now stored in the `SEARCH_PATTERN` variable. **Hint:** Look up the `grep -o` option.
+
+   d. Use `wc` to count the number of occurrences of the `SEARCH_PATTERN` returned by `grep`. **Hint:** Pipes can be of great help here. Store that number in a new variable `OCCURRENCES`.
+
+   e. Write to the file specified by `OUTPUT` the following message: `The search pattern <S> was found <N> time(s).` Replace `<S>` and `<N>` with the proper variable expressions.
+
+   **Success:** If the script runs without errors and writes the expected report, continue to Script 3 or try the optional challenge below.
+
+   **Additional Challenge (Optional):**  
+   Extend the script to handle a few common edge cases and provide richer output:
+
+   a. If the second command-line argument is missing (i.e., no output file specified), the script should write the output to a default file `results.txt`.
+
+   b. If the specified output file already exists, the script should inform the user that the file already exists and abort processing.
+
+   c. In addition to outputting the total number of occurrences, the script will also list the lines in the text where the searched word was found. **Hint:** Check out the `cut` command.
+
+   d. The search should be case-insensitive. **Hint:** Check the documentation for the `grep` command.
+
+This script combines `curl`, `grep`, and `wc` in a short bash pipeline to perform common raw text processing tasks. Next, clean and convert a remote data archive with bash.
+
+## Script 3: Use Bash to clean a data file
+
+**The Case:** You need to turn a remote compressed data bundle into a clean CSV: download an archive, remove blank rows from a tab-separated file, convert it to CSV, count the remaining data rows, and re-package the result.
+
+**Your Task:** Write a bash script named `convert-bundle.sh` that retrieves a remote tar archive, decompresses it, removes blank lines from the dataset, converts the tab-separated file to CSV, reports how many data rows remain, and packages the cleaned CSV into a new compressed archive.
+
+**Let's Build It:**
+
+1. In the repo root (`lab-03-scripting`), create a new file `convert-bundle.sh`. Begin the script with a shebang and strict error handling:
+
+   ```bash
+   #!/bin/bash
+   set -euo pipefail
+   ```
+
+2. Using `curl` or `wget`, fetch this tarball:
+
+   <https://s3.amazonaws.com/ds2002-resources/labs/lab3-bundle.tar.gz>
+
+3. Decompress / open the compressed archive using `tar`.
+
+4. Remove any empty rows from the dataset. Use **one** of these two approaches:
+
+   ```bash
+   # awk can remove blank / whitespace-only lines
+   awk '!/^[[:space:]]*$/' myfile.tsv
+
+   # tr can squeeze repeated newlines
+   cat myfile.tsv | tr -s '\n' > my_new_file.tsv
+   ```
+
+   Adjust the input and output filenames to match what you find inside the archive.
+
+5. Convert the tab-separated file into a comma-separated (CSV) file. You can do this with tools such as `sed`, `tr`, or `awk` (for example, replace tab characters with commas).
+
+6. Add a line of code to count how many lines of data remain in the cleaned file. Remember that row 1 contains headers, so it should not be counted. Another line should `echo` that value to the screen.
+
+7. Finally, create a new tarball named `converted-archive.tar.gz` that contains the cleaned CSV file.
+
+8. Use `chmod` to make your script executable, and run it. Make sure no errors occur.
+
+**Success:** When the script finishes without errors and produces `converted-archive.tar.gz`, you have finished the coding portion of the lab. Submit your work as described below.
 
 ## Submit your work
 
-You created three scripts for this lab (`analyze-moby-dick.sh` and `convert-bundle.sh` at the repo root, and `github-events.py` under `src/ghevents/`), plus the `uv` project files needed to run the Python script. Add, commit, and push them to your fork. Then submit the URL of your forked repository in the text box within Canvas.
+You created three scripts for this lab (`github-events.py` under `src/ghevents/`, and `analyze-moby-dick.sh` and `convert-bundle.sh` at the repo root), plus the `uv` project files needed to run the Python script. Add, commit, and push them to your fork. Then submit the URL of your forked repository in the text box within Canvas.
 
 ## Expected repository layout
 
