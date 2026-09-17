@@ -65,7 +65,7 @@ The following will happen:
 - `uv.lock`: A declarative description of the exact Python package versions added to your project. Scroll down to `requests` and note that it has a specific version. This makes your environment exactly reproducible on other systems. Do not edit it manually.
 - `.venv`: A new hidden directory with `lib` and `bin` subfolders and a few additional files that help manage an isolated environment for your Python project and its dependency packages. Check the `lib` folder; this is where the `requests` package (along with its own dependencies) was installed.
 
-Create a `.gitignore` file in the repository's top-level directory so Git does not track the virtual environment. You can run:
+`uv init` will create a hidden .gitignore file if it doesn't exist already. Confirm it exists and it has a line `.venv/`. If not, create a new `.gitignore` file in the repository's top-level directory so Git does not track the virtual environment. You can run:
 
 ```bash
 echo ".venv/" >> .gitignore
